@@ -226,4 +226,6 @@ All 9 test cases passed (13/13 assertions) on a live PostgreSQL backend:
 
 ## License
 
-This project was developed as a final-year engineering project (PFE). All rights reserved.
+This project is licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Flake911
