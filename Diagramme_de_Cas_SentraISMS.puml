@@ -1,0 +1,439 @@
+@startuml Diagramme_de_Cas_SentraISMS
+' ==========================================================
+'  SentraISMS – Diagramme de Cas d'Utilisation (Use-Case)
+'  Plateforme SMSI ISO 27001:2022
+' ==========================================================
+
+!theme plain
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam ArrowColor #444444
+skinparam ArrowFontColor #333333
+skinparam ArrowFontSize 10
+
+skinparam actor {
+  BorderColor #1565C0
+  BackgroundColor #E3F2FD
+  FontColor #0D47A1
+  FontStyle Bold
+  FontSize 11
+}
+
+skinparam usecase {
+  BackgroundColor #FAFAFA
+  BorderColor #546E7A
+  FontColor #263238
+  FontSize 10
+}
+
+skinparam package {
+  BorderColor #455A64
+  BackgroundColor #ECEFF1
+  FontColor #263238
+  FontStyle Bold
+  FontSize 12
+}
+
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+}
+
+left to right direction
+
+' ==========================================================
+'  ACTEURS (6 rôles hiérarchiques)
+' ==========================================================
+actor "Employé"               as EMP   #E3F2FD
+actor "Responsable Sécurité"  as SECOFC #E8F5E9
+actor "Auditeur"              as AUD   #F3E5F5
+actor "Responsable SMSI"      as ISMS  #FFF3E0
+actor "Admin Organisation"    as OADM  #FCE4EC
+actor "Super Admin"           as SADM  #FFEBEE
+
+' Hiérarchie d'héritage (chaque rôle hérite du précédent)
+EMP    <|-- SECOFC
+SECOFC <|-- AUD
+AUD    <|-- ISMS
+ISMS   <|-- OADM
+OADM   <|-- SADM
+
+note right of EMP
+  Rôles cumulatifs :
+  Employé → Resp. Sécurité
+  → Auditeur → Resp. SMSI
+  → Admin Org. → Super Admin
+  (chaque rôle hérite
+   des droits du précédent)
+end note
+
+' ==========================================================
+'  FRONTIÈRE DU SYSTÈME
+' ==========================================================
+rectangle "SentraISMS — Plateforme de Gestion SMSI ISO 27001:2022" {
+
+  ' --------------------------------------------------------
+  '  PACKAGE 1 : AUTHENTIFICATION
+  ' --------------------------------------------------------
+  package "1. Authentification & Sécurité d'Accès" as PKG_AUTH {
+    usecase "UC01 : Se connecter\n(Login JWT)" as UC01
+    usecase "UC02 : Se déconnecter\n(Logout)" as UC02
+    usecase "UC03 : Consulter / Modifier\nson profil" as UC03
+    usecase "UC04 : Activer l'authentification\nmulti-facteurs (MFA)" as UC04
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 2 : TABLEAU DE BORD
+  ' --------------------------------------------------------
+  package "2. Tableau de Bord (Dashboard)" as PKG_DASH {
+    usecase "UC05 : Consulter le tableau de bord\n(KPIs globaux)" as UC05
+    usecase "UC06 : Visualiser la heatmap\ndes risques (5×5)" as UC06
+    usecase "UC07 : Suivre l'état de préparation\nà la certification ISO 27001" as UC07
+    usecase "UC08 : Consulter la liste de vérification\nd'initialisation (Setup Checklist)" as UC08
+    usecase "UC09 : Visualiser les graphiques\n(Risques, Contrôles, Incidents)" as UC09
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 3 : FONDATION SMSI
+  ' --------------------------------------------------------
+  package "3. Fondation SMSI (Clauses ISO 4–7)" as PKG_FOUND {
+    usecase "UC10 : Définir le périmètre SMSI\n(Clause 4 – Scope)" as UC10
+    usecase "UC11 : Décrire le contexte organisationnel\n(Enjeux internes & externes)" as UC11
+    usecase "UC12 : Identifier les parties intéressées\n(Clause 4.2)" as UC12
+    usecase "UC13 : Configurer la gouvernance SMSI\n(Clause 5 – Leadership)" as UC13
+    usecase "UC14 : Définir les rôles &\nresponsabilités de direction" as UC14
+    usecase "UC15 : Gérer les objectifs de sécurité\n(Clause 6.2 – Objectives)" as UC15
+    usecase "UC16 : Suivre la progression\ndes objectifs (%)" as UC16
+    usecase "UC17 : Planifier les communications\nSMSI (Clause 7.4)" as UC17
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 4 : GESTION DES POLITIQUES
+  ' --------------------------------------------------------
+  package "4. Gestion des Politiques de Sécurité" as PKG_POL {
+    usecase "UC18 : Consulter les politiques\nde sécurité publiées" as UC18
+    usecase "UC19 : Créer une nouvelle politique\n(statut : Brouillon)" as UC19
+    usecase "UC20 : Modifier / Versionner\nune politique" as UC20
+    usecase "UC21 : Soumettre une politique\nà l'approbation" as UC21
+    usecase "UC22 : Approuver une politique\n(statut : Approuvée)" as UC22
+    usecase "UC23 : Publier une politique\n(statut : Publiée)" as UC23
+    usecase "UC24 : Archiver une politique\nobsolète" as UC24
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 5 : RISQUES & CONTRÔLES
+  ' --------------------------------------------------------
+  package "5. Gestion des Risques & Contrôles (Annex A)" as PKG_RISK {
+    usecase "UC25 : Consulter le registre\ndes risques" as UC25
+    usecase "UC26 : Créer un risque\n(catégorie, propriétaire)" as UC26
+    usecase "UC27 : Évaluer un risque\n(Probabilité × Impact = Score)" as UC27
+    usecase "UC28 : Mettre à jour le statut\nd'un risque" as UC28
+    usecase "UC29 : Lier un risque à un\nou plusieurs contrôles" as UC29
+    usecase "UC30 : Exporter le registre\ndes risques (CSV / PDF)" as UC30
+    usecase "UC31 : Gérer les 93 contrôles\nAnnex A ISO 27001" as UC31
+    usecase "UC32 : Mettre à jour l'état\nd'un contrôle (Implémenté…)" as UC32
+    usecase "UC33 : Associer des preuves\nà un contrôle" as UC33
+    usecase "UC34 : Gérer la Déclaration\nd'Applicabilité (SoA)" as UC34
+    usecase "UC35 : Marquer un contrôle comme\napplicable / non applicable" as UC35
+    usecase "UC36 : Gérer l'inventaire\ndes actifs (Assets)" as UC36
+    usecase "UC37 : Classifier les actifs\n(Public / Interne / Confidentiel)" as UC37
+    usecase "UC38 : Gérer la classification\ndes données" as UC38
+    usecase "UC39 : Surveiller les menaces\n(Threat Intelligence)" as UC39
+    usecase "UC40 : Lier des menaces aux\nrisques et contrôles" as UC40
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 6 : INCIDENTS
+  ' --------------------------------------------------------
+  package "6. Gestion des Incidents de Sécurité" as PKG_INC {
+    usecase "UC41 : Signaler un incident\nde sécurité" as UC41
+    usecase "UC42 : Investiguer un incident\n(statut : En investigation)" as UC42
+    usecase "UC43 : Documenter la cause\nracine d'un incident" as UC43
+    usecase "UC44 : Résoudre un incident\n(statut : Résolu)" as UC44
+    usecase "UC45 : Clôturer un incident\n(statut : Clôturé)" as UC45
+    usecase "UC46 : Exporter le rapport\nd'incident (CSV / PDF)" as UC46
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 7 : FORMATION & SENSIBILISATION
+  ' --------------------------------------------------------
+  package "7. Formation & Sensibilisation à la Sécurité" as PKG_TRAIN {
+    usecase "UC47 : Suivre les formations\nassignées (Training)" as UC47
+    usecase "UC48 : Compléter un cours de\nsensibilisation interactif" as UC48
+    usecase "UC49 : Consulter sa progression\net son score (Awareness)" as UC49
+    usecase "UC50 : Gérer le catalogue\nde formations (admin)" as UC50
+    usecase "UC51 : Assigner une formation\nà un utilisateur" as UC51
+    usecase "UC52 : Consulter les taux\nde complétion des formations" as UC52
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 8 : CONFORMITÉ & AUDITS
+  ' --------------------------------------------------------
+  package "8. Conformité Réglementaire & Audits" as PKG_AUD {
+    usecase "UC53 : Planifier un audit\n(Interne / Externe)" as UC53
+    usecase "UC54 : Enregistrer les constatations\nd'audit (Findings)" as UC54
+    usecase "UC55 : Finaliser et clôturer\nun audit" as UC55
+    usecase "UC56 : Gérer les preuves\n(Evidence Repository)" as UC56
+    usecase "UC57 : Téléverser un document\nde preuve (fichier)" as UC57
+    usecase "UC58 : Lier une preuve à un\nrisque / contrôle / audit" as UC58
+    usecase "UC59 : Suivre la conformité\naux exigences ISO" as UC59
+    usecase "UC60 : Mettre à jour le statut\nde conformité d'une clause" as UC60
+    usecase "UC61 : Gérer le registre\ndes exigences légales" as UC61
+    usecase "UC62 : Suivre l'applicabilité\ndes lois par juridiction" as UC62
+    usecase "UC63 : Créer une Action Corrective\nou Préventive (CAPA)" as UC63
+    usecase "UC64 : Suivre l'avancement\ndes CAPA (statut, délai)" as UC64
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 9 : OPÉRATIONS SMSI
+  ' --------------------------------------------------------
+  package "9. Opérations SMSI" as PKG_OPS {
+    usecase "UC65 : Gérer les demandes\nde changement (Changes)" as UC65
+    usecase "UC66 : Approuver / Rejeter\nun changement" as UC66
+    usecase "UC67 : Gérer les fournisseurs\n(Vendor Risk Management)" as UC67
+    usecase "UC68 : Évaluer le niveau de risque\nd'un fournisseur" as UC68
+    usecase "UC69 : Gérer la continuité d'activité\n(BCP / Plan de reprise DR)" as UC69
+    usecase "UC70 : Définir les objectifs RTO / RPO\npour chaque plan" as UC70
+    usecase "UC71 : Planifier et tester\nle plan de continuité" as UC71
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 10 : MANAGEMENT & AMÉLIORATION
+  ' --------------------------------------------------------
+  package "10. Management & Amélioration Continue (Clause 9–10)" as PKG_MGMT {
+    usecase "UC72 : Gérer les revues\nde direction (Clause 9.3)" as UC72
+    usecase "UC73 : Enregistrer les décisions\net actions issues de la revue" as UC73
+    usecase "UC74 : Enregistrer une initiative\nd'amélioration (Clause 10.1)" as UC74
+    usecase "UC75 : Suivre le statut\ndes améliorations" as UC75
+    usecase "UC76 : Générer des rapports\nSMSI (Reports Center)" as UC76
+    usecase "UC77 : Exporter les données\nen CSV" as UC77
+    usecase "UC78 : Exporter les données\nen PDF" as UC78
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 11 : ADMINISTRATION SYSTÈME
+  ' --------------------------------------------------------
+  package "11. Administration Système" as PKG_ADMIN {
+    usecase "UC79 : Gérer les utilisateurs\n(créer, modifier, désactiver)" as UC79
+    usecase "UC80 : Attribuer / Modifier\nle rôle d'un utilisateur" as UC80
+    usecase "UC81 : Configurer les paramètres\nde la plateforme (Settings)" as UC81
+    usecase "UC82 : Consulter la piste d'audit\ncomplète (Audit Trail)" as UC82
+    usecase "UC83 : Filtrer les logs par\nmodule / action / date" as UC83
+    usecase "UC84 : Exporter les logs\nd'audit (CSV)" as UC84
+    usecase "UC85 : Gérer les notifications\nsystème (broadcast)" as UC85
+  }
+
+  ' --------------------------------------------------------
+  '  PACKAGE 12 : FONCTIONNALITÉS TRANSVERSALES
+  ' --------------------------------------------------------
+  package "12. Fonctionnalités Transversales" as PKG_CROSS {
+    usecase "UC86 : Ajouter un commentaire\nsur un enregistrement" as UC86
+    usecase "UC87 : Recevoir des notifications\nsystème" as UC87
+    usecase "UC88 : Consulter la traçabilité\n(qui a modifié quoi, quand)" as UC88
+  }
+
+} ' fin système
+
+' ==========================================================
+'  ASSOCIATIONS ACTEUR → CAS D'UTILISATION
+' ==========================================================
+
+' ---- TOUS LES UTILISATEURS (Employé et au-dessus) --------
+EMP --> UC01
+EMP --> UC02
+EMP --> UC03
+EMP --> UC04
+EMP --> UC05
+EMP --> UC06
+EMP --> UC07
+EMP --> UC08
+EMP --> UC09
+EMP --> UC18
+EMP --> UC41
+EMP --> UC47
+EMP --> UC48
+EMP --> UC49
+EMP --> UC86
+EMP --> UC87
+
+' ---- RESPONSABLE SÉCURITÉ (+ droits Employé) -------------
+SECOFC --> UC25
+SECOFC --> UC26
+SECOFC --> UC27
+SECOFC --> UC28
+SECOFC --> UC29
+SECOFC --> UC30
+SECOFC --> UC31
+SECOFC --> UC32
+SECOFC --> UC33
+SECOFC --> UC36
+SECOFC --> UC37
+SECOFC --> UC38
+SECOFC --> UC39
+SECOFC --> UC40
+SECOFC --> UC42
+SECOFC --> UC43
+SECOFC --> UC44
+
+' ---- AUDITEUR (+ droits Responsable Sécurité) ------------
+AUD --> UC10
+AUD --> UC11
+AUD --> UC12
+AUD --> UC13
+AUD --> UC14
+AUD --> UC15
+AUD --> UC16
+AUD --> UC34
+AUD --> UC35
+AUD --> UC53
+AUD --> UC54
+AUD --> UC55
+AUD --> UC56
+AUD --> UC57
+AUD --> UC58
+AUD --> UC59
+AUD --> UC60
+AUD --> UC61
+AUD --> UC62
+AUD --> UC88
+
+' ---- RESPONSABLE SMSI (+ droits Auditeur) ----------------
+ISMS --> UC17
+ISMS --> UC19
+ISMS --> UC20
+ISMS --> UC21
+ISMS --> UC22
+ISMS --> UC23
+ISMS --> UC24
+ISMS --> UC45
+ISMS --> UC46
+ISMS --> UC50
+ISMS --> UC51
+ISMS --> UC52
+ISMS --> UC63
+ISMS --> UC64
+ISMS --> UC65
+ISMS --> UC66
+ISMS --> UC67
+ISMS --> UC68
+ISMS --> UC69
+ISMS --> UC70
+ISMS --> UC71
+ISMS --> UC72
+ISMS --> UC73
+ISMS --> UC74
+ISMS --> UC75
+ISMS --> UC76
+ISMS --> UC77
+ISMS --> UC78
+
+' ---- ADMIN ORGANISATION (+ droits Responsable SMSI) ------
+OADM --> UC79
+OADM --> UC80
+OADM --> UC81
+OADM --> UC82
+OADM --> UC83
+OADM --> UC84
+OADM --> UC85
+
+' ---- SUPER ADMIN (hérite tout + accès illimité) ----------
+' Super Admin hérite via la chaîne d'héritage
+' Pas de cas supplémentaires distincts — accès à l'ensemble des 88 UC
+
+' ==========================================================
+'  RELATIONS <<include>> ET <<extend>>
+' ==========================================================
+
+' -- Tableau de bord --
+UC05 ..> UC06 : <<include>>
+UC05 ..> UC09 : <<include>>
+UC07 ..> UC08 : <<include>>
+
+' -- Gestion des risques --
+UC26 ..> UC27 : <<include>>
+UC27 ..> UC29 : <<extend>>
+UC25 ..> UC30 : <<extend>>
+UC31 ..> UC32 : <<include>>
+UC31 ..> UC34 : <<include>>
+UC34 ..> UC35 : <<include>>
+UC33 ..> UC57 : <<include>>
+
+' -- Cycle de vie des incidents --
+UC41 ..> UC42 : <<extend>>
+UC42 ..> UC43 : <<include>>
+UC43 ..> UC44 : <<extend>>
+UC44 ..> UC45 : <<extend>>
+UC45 ..> UC46 : <<extend>>
+
+' -- Cycle de vie des politiques --
+UC19 ..> UC21 : <<extend>>
+UC21 ..> UC22 : <<extend>>
+UC22 ..> UC23 : <<extend>>
+UC23 ..> UC24 : <<extend>>
+
+' -- Périmètre SMSI --
+UC10 ..> UC11 : <<include>>
+UC10 ..> UC12 : <<include>>
+
+' -- Gouvernance --
+UC13 ..> UC14 : <<include>>
+
+' -- Objectifs --
+UC15 ..> UC16 : <<include>>
+
+' -- Audits --
+UC53 ..> UC54 : <<extend>>
+UC54 ..> UC55 : <<extend>>
+UC56 ..> UC57 : <<include>>
+UC57 ..> UC58 : <<include>>
+
+' -- Conformité --
+UC59 ..> UC60 : <<include>>
+UC61 ..> UC62 : <<include>>
+
+' -- CAPA --
+UC63 ..> UC64 : <<include>>
+
+' -- Fournisseurs --
+UC67 ..> UC68 : <<include>>
+
+' -- BCP --
+UC69 ..> UC70 : <<include>>
+UC69 ..> UC71 : <<extend>>
+
+' -- Revue de direction --
+UC72 ..> UC73 : <<include>>
+
+' -- Amélioration --
+UC74 ..> UC75 : <<include>>
+
+' -- Rapports --
+UC76 ..> UC77 : <<include>>
+UC76 ..> UC78 : <<include>>
+
+' -- Changements --
+UC65 ..> UC66 : <<extend>>
+
+' -- Piste d'audit --
+UC82 ..> UC83 : <<include>>
+UC82 ..> UC84 : <<extend>>
+
+' -- Administration utilisateurs --
+UC79 ..> UC80 : <<include>>
+
+' -- Formation --
+UC50 ..> UC51 : <<include>>
+UC51 ..> UC52 : <<extend>>
+UC47 ..> UC49 : <<extend>>
+UC48 ..> UC49 : <<extend>>
+
+' -- Menaces --
+UC39 ..> UC40 : <<extend>>
+
+' -- Actifs --
+UC36 ..> UC37 : <<include>>
+
+@enduml

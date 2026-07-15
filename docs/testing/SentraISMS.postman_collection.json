@@ -1,0 +1,541 @@
+{
+  "info": {
+    "_postman_id": "sentra-isms-testing-2026",
+    "name": "SentraISMS API Tests",
+    "description": "Functional API test collection for SentraISMS — ISO 27001:2022 ISMS Platform. PFE testing suite.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001/api", "type": "string" },
+    { "key": "token",   "value": "", "type": "string" },
+    { "key": "riskId",  "value": "", "type": "string" },
+    { "key": "incidentId", "value": "", "type": "string" },
+    { "key": "riskControlId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "TC-01 — Login (valid credentials)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-01: Status 200 OK', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-01: Response contains token', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('token');",
+                  "  pm.expect(json.token).to.be.a('string').and.not.empty;",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "});",
+                  "pm.test('TC-01: Response contains user object with role', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.user).to.have.property('role');",
+                  "  pm.expect(json.user.email).to.eql('o.chraibi@dekra.ma');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"o.chraibi@dekra.ma\",\n  \"password\": \"Dekra@2026\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-02 — Login (wrong password)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-02: Status 401 Unauthorized', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});",
+                  "pm.test('TC-02: Error message present', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"o.chraibi@dekra.ma\",\n  \"password\": \"wrongpassword\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-03 — Access protected endpoint without token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-03: Status 401 Unauthorized (no token)', function () {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/risks"
+          }
+        },
+        {
+          "name": "TC-04 — RBAC: Employee token on admin-only endpoint",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// This request uses a separately obtained Employee token.",
+                  "// Login as l.bennani@dekra.ma (Employee) first and paste the token below,",
+                  "// OR run the 'Login as Employee' helper request before this one."
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-04: Status 403 Forbidden (insufficient role)', function () {",
+                  "  pm.response.to.have.status(403);",
+                  "});",
+                  "pm.test('TC-04: Message indicates role requirement', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.message).to.include('Requires role');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{employeeToken}}" }
+            ],
+            "url": "{{baseUrl}}/risks/some-risk-id"
+          }
+        },
+        {
+          "name": "Helper — Login as Employee (save employeeToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('employeeToken', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"l.bennani@dekra.ma\",\n  \"password\": \"Dekra@2026\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RISKS",
+      "item": [
+        {
+          "name": "TC-05 — Create risk (Security Officer token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-05: Status 201 Created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('TC-05: riskScore stored as sent (4 × 5 = 20)', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.riskScore).to.eql(20);",
+                  "  pm.collectionVariables.set('riskId', json.id);",
+                  "});",
+                  "pm.test('TC-05: title matches input', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.title).to.eql('Test Risk — PFE TC-05');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/risks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Risk — PFE TC-05\",\n  \"category\": \"Technical\",\n  \"likelihood\": 4,\n  \"impact\": 5,\n  \"riskScore\": 20,\n  \"owner\": \"Omar Chraibi\",\n  \"treatment\": \"Mitigate\",\n  \"status\": \"Open\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-06a — Link risk to control (first link)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-06a: Status 201 Created (first link)', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('TC-06a: riskControl record returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('riskId');",
+                  "  pm.expect(json).to.have.property('controlId');",
+                  "  pm.collectionVariables.set('riskControlId', json.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/risk-controls",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"riskId\": \"{{riskId}}\",\n  \"controlId\": \"CTRL-A-5-1\",\n  \"notes\": \"Initial link\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-06b — Duplicate Risk-Control link (upsert behavior)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-06b: Status 200/201 (upsert — notes updated, no duplicate error)', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "pm.test('TC-06b: Updated notes reflected', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.notes).to.eql('Updated notes via upsert');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/risk-controls",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"riskId\": \"{{riskId}}\",\n  \"controlId\": \"CTRL-A-5-1\",\n  \"notes\": \"Updated notes via upsert\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET all risks (authenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('GET risks: Status 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('GET risks: Returns array', function () {",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/risks"
+          }
+        }
+      ]
+    },
+    {
+      "name": "INCIDENTS",
+      "item": [
+        {
+          "name": "TC-08a — Create incident (status: Open)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-08a: Status 201 Created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('TC-08a: status is Open', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('Open');",
+                  "  pm.collectionVariables.set('incidentId', json.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/incidents",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Incident — PFE TC-08\",\n  \"severity\": \"High\",\n  \"type\": \"Phishing\",\n  \"status\": \"Open\",\n  \"reporter\": \"Omar Chraibi\",\n  \"description\": \"Simulated phishing attempt for testing\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-08b — Update incident status to In Progress",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-08b: Status 200 OK', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-08b: status is In Progress', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('In Progress');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/incidents/{{incidentId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\",\n  \"assignee\": \"Omar Chraibi\"\n}"
+            }
+          }
+        },
+        {
+          "name": "TC-08c — Close incident (status: Closed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-08c: Status 200 OK', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-08c: status is Closed', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('Closed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/incidents/{{incidentId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Closed\",\n  \"resolution\": \"Phishing attempt blocked and reported. User re-trained.\",\n  \"rootCause\": \"Social engineering via spoofed email\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "EVIDENCE",
+      "item": [
+        {
+          "name": "TC-07a — Upload valid PDF file (< 10 MB)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-07a: Status 201 Created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('TC-07a: fileName present in response', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('fileName');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/evidence/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/test-evidence.pdf" },
+                { "key": "title", "value": "Test Evidence — PFE TC-07", "type": "text" },
+                { "key": "type", "value": "Document", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-07b — Upload file exceeding 10 MB limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-07b: Request rejected (file too large — 413 or 500)', function () {",
+                  "  pm.expect([413, 500]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/evidence/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "/path/to/large-file-over-10mb.bin" },
+                { "key": "title", "value": "Oversized file test", "type": "text" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AUDIT LOG",
+      "item": [
+        {
+          "name": "TC-09 — Retrieve audit log entries (Auditor+ token)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Login as Auditor: k.mansouri@dekra.ma / Dekra@2026",
+                  "// and set {{auditorToken}} before running this request."
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-09: Status 200 OK', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('TC-09: Returns array of audit log entries', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{auditorToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs?take=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit-logs"],
+              "query": [{ "key": "take", "value": "10" }]
+            }
+          }
+        },
+        {
+          "name": "Helper — Login as Auditor (save auditorToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('auditorToken', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"k.mansouri@dekra.ma\",\n  \"password\": \"Dekra@2026\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

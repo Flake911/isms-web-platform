@@ -1,0 +1,115 @@
+const fs = require('fs');
+let c = fs.readFileSync('prisma/seed.ts', 'utf8');
+
+const r = [
+  // Leadership responsibilities
+  ["Approbation de la politique SMSI, allocation des ressources, engagement de la direction envers ISO 27001:2022","ISMS policy approval, resource allocation, top management commitment to ISO 27001:2022"],
+  ["Assurer la conformité et la performance du SMSI, présider les revues de direction","Ensure ISMS compliance and performance, chair management reviews"],
+  ["Supervision de l'infrastructure IT, gestion des accès, sécurité réseau, continuité informatique","Oversee IT infrastructure, manage access controls, network security and IT continuity"],
+  ["Garantir la disponibilité, intégrité et confidentialité des systèmes d'information","Ensure availability, integrity and confidentiality of information systems"],
+  ["Pilotage du SMSI, analyse des risques, suivi des contrôles Annex A, coordination des audits, formation sensibilisation","ISMS steering, risk analysis, Annex A control monitoring, audit coordination, security awareness training"],
+  ["Maintenir et améliorer en continu le SMSI de DEKRA Maroc","Continuously maintain and improve the DEKRA Maroc ISMS"],
+  ["Gestion du système qualité ISO 9001 et ISO 45001, intégration SMSI dans le SMQ, audits internes","Manage ISO 9001 and ISO 45001 quality systems, integrate ISMS into QMS, conduct internal audits"],
+  ["Assurer la conformité aux référentiels qualité et sécurité applicables","Ensure compliance with applicable quality and security standards"],
+  ["Sensibilisation sécurité du personnel, clauses de confidentialité, onboarding sécurisé, offboarding et révocation des accès","Staff security awareness, confidentiality clauses, secure onboarding, offboarding and access revocation"],
+  ["Intégrer les exigences de sécurité dans les processus RH","Integrate security requirements into HR processes"],
+  ["Sécurité physique des centres d'inspection, continuité des opérations, gestion des sous-traitants terrain","Physical security of inspection centers, operations continuity, field subcontractor management"],
+  ["Assurer la sécurité physique et opérationnelle de l'ensemble des sites DEKRA Maroc","Ensure physical and operational security across all DEKRA Maroc sites"],
+  ["Veille réglementaire Loi 09-08, Loi 05-20, RGPD, gestion des contrats fournisseurs, conformité légale","Regulatory watch: Law 09-08, Law 05-20, GDPR; supplier contract management and legal compliance"],
+  ["Garantir la conformité légale et réglementaire du SMSI","Ensure legal and regulatory compliance of the ISMS"],
+  ["Planification et exécution des audits internes SMSI, suivi des non-conformités, rapports d'audit","Planning and execution of internal ISMS audits, nonconformity tracking, audit reporting"],
+  ["Fournir une assurance indépendante sur l'efficacité du SMSI","Provide independent assurance on ISMS effectiveness"],
+  ["Classification et inventaire des actifs informationnels, revue annuelle des actifs, gestion du cycle de vie","Classification and inventory of information assets, annual asset review, lifecycle management"],
+  ["Maintenir un inventaire exhaustif et à jour des actifs de DEKRA Maroc","Maintain a comprehensive and up-to-date asset inventory for DEKRA Maroc"],
+  ["Liaison entre la direction générale et les équipes opérationnelles pour le SMSI, reporting KPI sécurité","Liaison between general management and operational teams for the ISMS, security KPI reporting"],
+  ["Assurer la communication efficace des objectifs et performances du SMSI","Ensure effective communication of ISMS objectives and performance"],
+  // Risk titles
+  ["Accès non autorisé au système de gestion des inspections SIVI","Unauthorized Access to SIVI Inspection Management System"],
+  ["Ransomware ciblant l'infrastructure serveurs Casablanca","Ransomware Attack Targeting Casablanca Server Infrastructure"],
+  ["Fuite de données personnelles clients (Loi 09-08)","Customer Personal Data Breach (Law 09-08)"],
+  ["Indisponibilité du portail client en ligne","Online Client Portal Unavailability"],
+  ["Ingénierie sociale ciblant les techniciens d'inspection","Social Engineering Targeting Inspection Technicians"],
+  ["Compromission des postes de travail Windows non patchés","Compromise of Unpatched Windows Workstations"],
+  ["Accès physique non autorisé aux salles serveurs","Unauthorized Physical Access to Server Rooms"],
+  ["Violation de confidentialité par prestataire tiers","Third-Party Confidentiality Breach"],
+  ["Perte ou vol d'équipements portables","Loss or Theft of Portable Equipment"],
+  ["Départ d'un collaborateur clé avec accès sensibles","Departure of a Key Employee with Sensitive Access"],
+  // Risk descriptions
+  ["Un acteur malveillant interne ou externe pourrait accéder sans autorisation au logiciel SIVI contenant les données d'inspection technique des véhicules de tout le Maroc","An internal or external malicious actor could gain unauthorized access to the SIVI software containing vehicle technical inspection data across Morocco"],
+  ["MFA activé sur SIVI, revue trimestrielle des accès, logs d'audit, formation utilisateurs","MFA enabled on SIVI, quarterly access review, audit logs, user training"],
+  ["Attaque par rançongiciel chiffrant les serveurs de production hébergés au datacenter de Casablanca, paralysant les opérations d'inspection sur l'ensemble du réseau","Ransomware attack encrypting production servers at the Casablanca datacenter, paralyzing inspection operations across the entire network"],
+  ["EDR Sentinel One déployé, sauvegardes offline quotidiennes, segmentation réseau, exercice de réponse aux incidents","SentinelOne EDR deployed, daily offline backups, network segmentation, incident response drills"],
+  ["Divulgation accidentelle ou malveillante de données personnelles de propriétaires de véhicules stockées dans les bases de données DEKRA Maroc, en violation de la Loi 09-08","Accidental or malicious disclosure of personal data of vehicle owners stored in DEKRA Maroc databases, violating Law 09-08"],
+  ["Chiffrement AES-256 des bases de données, politique de gestion des données, formation DPO, contrats sous-traitants conformes","AES-256 database encryption, data management policy, DPO training, compliant subcontractor contracts"],
+  ["Interruption prolongée du portail web permettant aux clients de prendre rendez-vous et de consulter leurs rapports d'inspection, causant une perte de revenus et d'image","Prolonged outage of the client web portal for booking appointments and viewing inspection reports, causing revenue and reputational loss"],
+  ["Hébergement OVHcloud avec SLA 99.9%, CDN Cloudflare, monitoring Uptime Robot, PRA documenté","OVHcloud hosting with 99.9% SLA, Cloudflare CDN, Uptime Robot monitoring, documented DR plan"],
+  ["Un attaquant se faisant passer pour un responsable DEKRA ou un client sollicite des informations confidentielles ou des modifications de résultats d'inspection auprès des techniciens terrain","An attacker impersonating a DEKRA manager or client solicits confidential information or manipulation of inspection results from field technicians"],
+  ["Formation annuelle anti-phishing et ingénierie sociale, procédures de vérification d'identité, canaux officiels uniquement","Annual anti-phishing and social engineering training, identity verification procedures, official channels only"],
+  ["Exploitation de vulnérabilités connues sur les postes Windows 10 non maintenus à jour dans les centres d'inspection régionaux","Exploitation of known vulnerabilities on unpatched Windows 10 workstations in regional inspection centers"],
+  ["WSUS déployé, politique de patch mensuel, inventaire Lansweeper, antivirus centralisé","WSUS deployed, monthly patching policy, Lansweeper inventory, centralized antivirus"],
+  ["Intrusion physique dans les locaux techniques de Casablanca ou Rabat permettant la manipulation ou le vol de matériel informatique sensible","Physical intrusion into technical premises in Casablanca or Rabat allowing manipulation or theft of sensitive IT equipment"],
+  ["Contrôle d'accès biométrique, badges RFID, CCTV 24/7, journaux d'accès, alarme intrusion","Biometric access control, RFID badges, 24/7 CCTV, access logs, intrusion alarm"],
+  ["Un fournisseur de services IT (cloud, maintenance) accède à des données confidentielles DEKRA Maroc sans autorisation ou en violation des clauses contractuelles","An IT service provider (cloud, maintenance) accesses confidential DEKRA Maroc data without authorization or in violation of contractual clauses"],
+  ["Clauses de confidentialité dans tous les contrats, évaluation sécurité fournisseurs annuelle, principe moindre privilège","Confidentiality clauses in all contracts, annual vendor security assessment, least privilege principle"],
+  ["Perte ou vol d'ordinateurs portables, tablettes ou smartphones utilisés par les inspecteurs terrain contenant des données professionnelles sensibles","Loss or theft of laptops, tablets or smartphones used by field inspectors containing sensitive business data"],
+  ["Chiffrement BitLocker obligatoire, MDM Microsoft Intune, effacement à distance, politique clear-desk","Mandatory BitLocker encryption, Microsoft Intune MDM, remote wipe capability, clear-desk policy"],
+  ["Un employé quittant DEKRA Maroc conserve des accès actifs aux systèmes critiques ou emporte des données confidentielles","An employee leaving DEKRA Maroc retains active access to critical systems or takes confidential data"],
+  ["Procédure d'offboarding formalisée, révocation des accès dans les 24h, entretien de départ sécurité, inventaire équipements restitués","Formalized offboarding procedure, access revocation within 24 hours, security exit interview, returned equipment inventory"],
+  // Risk short strings
+  ["Accès non autorisé","Unauthorized access"],
+  ["Authentification faible","Weak authentication"],
+  ["Absence de segmentation réseau","Lack of network segmentation"],
+  ["Fuite de données","Data breach"],
+  ["Données non chiffrées au repos","Unencrypted data at rest"],
+  ["DDoS / Panne infrastructure","DDoS / Infrastructure failure"],
+  ["Point unique de défaillance","Single point of failure"],
+  ["Ingénierie sociale","Social engineering"],
+  ["Sensibilisation insuffisante","Insufficient awareness"],
+  ["Exploitation de vulnérabilités","Vulnerability exploitation"],
+  ["Patches manquants","Missing patches"],
+  ["Intrusion physique","Physical intrusion"],
+  ["Contrôle d'accès insuffisant","Insufficient access control"],
+  ["Accès non autorisé tiers","Unauthorized third-party access"],
+  ["Gestion fournisseurs insuffisante","Insufficient vendor management"],
+  ["Vol physique","Physical theft"],
+  ["Chiffrement non activé","Encryption not enabled"],
+  ["Menace interne","Insider threat"],
+  ["Gestion des départs insuffisante","Insufficient offboarding management"],
+  // Assets
+  ["Salle Serveurs Casablanca","Casablanca Server Room"],
+  ["Base de données Oracle Inspection","Oracle Inspection Database"],
+  ["Parc Postes de Travail Windows","Windows Workstation Fleet"],
+  ["Portail Client Web DEKRA","DEKRA Web Client Portal"],
+  ["Comptes Utilisateurs Active Directory","Active Directory User Accounts"],
+  ["Données Clients","Customer Data"],
+  ["Équipements Portables","Portable Equipment"],
+  ["Personnel Techniciens","Inspection Technicians"],
+  // Console messages
+  ["Starting DEKRA Maroc ISMS seed","Starting DEKRA Maroc ISMS seed"],
+  ["Cleared all existing data","Cleared all existing data"],
+  // Remaining French patterns
+  ["vérification","verification"],
+  ["réponse aux incidents","incident response"],
+  ["non-conformités","nonconformities"],
+  ["rapports d'audit","audit reports"],
+  ["revues de direction","management reviews"],
+  ["revue trimestrielle","quarterly review"],
+  ["sous-traitants","subcontractors"],
+  ["confidentialité","confidentiality"],
+  ["disponibilité","availability"],
+  ["intégrité","integrity"],
+  ["moindre privilège","least privilege"],
+  ["effacement à distance","remote wipe"],
+  ["entretien de départ","exit interview"],
+  ["inventaire des actifs","asset inventory"],
+];
+
+for (const [fr, en] of r) {
+  c = c.split(fr).join(en);
+}
+
+fs.writeFileSync('prisma/seed.ts', c, 'utf8');
+
+// Check remaining French
+const french = (c.match(/\b(le |la |les |un |une |des |du |de |et |est |sont |pour |dans |sur |avec |par |au |aux |ou |qui |que )\b/g) || []);
+console.log('Done. Approximate remaining French articles:', french.length);

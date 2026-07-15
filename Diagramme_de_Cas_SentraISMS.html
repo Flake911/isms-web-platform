@@ -1,0 +1,538 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentraISMS — Diagramme de Cas d'Utilisation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 50%, #1a1040 100%);
+    border-bottom: 2px solid #3b82f6;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 15px rgba(59,130,246,0.4);
+  }
+  .logo h1 { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: 1px; }
+  .logo h1 span { color: #60a5fa; }
+  .header-meta { flex: 1; }
+  .header-meta h2 { font-size: 1rem; font-weight: 600; color: #93c5fd; }
+  .header-meta p { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+  .badge {
+    background: rgba(59,130,246,0.15);
+    border: 1px solid #3b82f6;
+    color: #60a5fa;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .toolbar-label { font-size: 0.75rem; color: #64748b; margin-right: 4px; }
+  .btn {
+    background: #334155;
+    border: 1px solid #475569;
+    color: #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .btn:hover { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+  .btn.active { background: #2563eb; border-color: #3b82f6; color: #fff; }
+  .separator { width: 1px; height: 24px; background: #334155; margin: 0 6px; }
+  #zoom-level {
+    font-size: 0.8rem; font-weight: 600; color: #60a5fa;
+    min-width: 48px; text-align: center;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 280px; min-width: 280px;
+    background: #1e293b;
+    border-right: 1px solid #334155;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.2s;
+  }
+  .sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; }
+  .sidebar-section { padding: 16px; border-bottom: 1px solid #2d3748; }
+  .sidebar-section h3 {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #64748b; margin-bottom: 12px;
+  }
+
+  /* actor cards */
+  .actor-card {
+    display: flex; align-items: center; gap: 10px;
+    background: #0f172a; border: 1px solid #2d3748;
+    border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+    transition: border-color 0.15s;
+  }
+  .actor-card:hover { border-color: #3b82f6; }
+  .actor-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .actor-info { flex: 1; }
+  .actor-name { font-size: 0.78rem; font-weight: 600; color: #e2e8f0; }
+  .actor-modules { font-size: 0.68rem; color: #64748b; margin-top: 1px; }
+  .actor-badge {
+    font-size: 0.62rem; font-weight: 700;
+    background: rgba(59,130,246,0.15); color: #60a5fa;
+    padding: 1px 6px; border-radius: 10px;
+  }
+
+  /* package list */
+  .pkg-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 8px; border-radius: 6px; margin-bottom: 3px;
+    font-size: 0.75rem; color: #94a3b8;
+    cursor: default;
+    transition: background 0.1s;
+  }
+  .pkg-item:hover { background: #0f172a; }
+  .pkg-num {
+    background: #334155; color: #60a5fa;
+    font-size: 0.62rem; font-weight: 700;
+    width: 20px; height: 20px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* legend */
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.75rem; color: #94a3b8; }
+  .legend-line { height: 2px; width: 32px; flex-shrink: 0; }
+  .legend-line.include { background: #3b82f6; }
+  .legend-line.extend { background: #8b5cf6; border-top: 2px dashed #8b5cf6; background: transparent; }
+  .legend-line.inherit { height: 0; border-top: 2px solid #10b981; width: 32px; }
+
+  /* stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-card {
+    background: #0f172a; border: 1px solid #2d3748;
+    border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .stat-num { font-size: 1.4rem; font-weight: 700; color: #60a5fa; }
+  .stat-lbl { font-size: 0.65rem; color: #64748b; margin-top: 2px; }
+
+  /* ── DIAGRAM AREA ── */
+  .diagram-area {
+    flex: 1; overflow: hidden; position: relative;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(59,130,246,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139,92,246,0.04) 0%, transparent 50%),
+      #0f172a;
+    background-size: 40px 40px, 40px 40px, auto;
+  }
+
+  #canvas-wrapper {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #canvas-wrapper.dragging { cursor: grabbing; }
+
+  #diagram-inner {
+    transform-origin: center center;
+    transition: none;
+    user-select: none;
+  }
+
+  #diagram-inner svg {
+    display: block;
+    border-radius: 8px;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    background: #fff;
+  }
+
+  /* minimap */
+  #minimap {
+    position: absolute; bottom: 20px; right: 20px;
+    width: 160px; height: 100px;
+    background: rgba(30,41,59,0.95);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  #minimap-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.8; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    padding: 8px 24px;
+    font-size: 0.72rem;
+    color: #475569;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  footer span { color: #64748b; }
+  footer strong { color: #94a3b8; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+  @media (max-width: 640px) {
+    .sidebar { width: 0; min-width: 0; }
+    header { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">&#x1F6E1;&#xFE0F;</div>
+    <div>
+      <h1>Sentra<span>ISMS</span></h1>
+    </div>
+  </div>
+  <div class="header-meta">
+    <h2>Diagramme de Cas d'Utilisation</h2>
+    <p>Plateforme de Gestion SMSI — ISO 27001:2022 | 88 cas d'utilisation | 6 acteurs | 12 packages</p>
+  </div>
+  <span class="badge">ISO 27001:2022</span>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="toolbar-label">Zoom :</span>
+  <button class="btn" id="btn-zoom-out" title="Zoom arrière">&#x2212;</button>
+  <span id="zoom-level">100%</span>
+  <button class="btn" id="btn-zoom-in" title="Zoom avant">&#x2B;</button>
+  <button class="btn" id="btn-reset" title="Réinitialiser">&#x21BA; Reset</button>
+  <button class="btn" id="btn-fit" title="Ajuster à la fenêtre">&#x26F6; Fit</button>
+  <div class="separator"></div>
+  <button class="btn" id="btn-sidebar" title="Afficher/masquer la légende">&#x22EE; Légende</button>
+  <div class="separator"></div>
+  <button class="btn" id="btn-fullscreen" title="Plein écran">&#x26F6; Plein écran</button>
+  <div class="separator"></div>
+  <span class="toolbar-label" style="margin-left:8px;">&#x1F5B1; Glisser pour déplacer &nbsp;|&nbsp; &#x1F5B1; Molette pour zoomer</span>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Stats -->
+    <div class="sidebar-section">
+      <h3>Statistiques</h3>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num">6</div><div class="stat-lbl">Acteurs</div></div>
+        <div class="stat-card"><div class="stat-num">88</div><div class="stat-lbl">Cas d'utilisation</div></div>
+        <div class="stat-card"><div class="stat-num">12</div><div class="stat-lbl">Packages</div></div>
+        <div class="stat-card"><div class="stat-num">28</div><div class="stat-lbl">Modules SMSI</div></div>
+      </div>
+    </div>
+
+    <!-- Actors -->
+    <div class="sidebar-section">
+      <h3>Acteurs (hiérarchie cumulative)</h3>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#60a5fa;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Employé</div>
+          <div class="actor-modules">Dashboard, Politiques, Incidents, Formation, Sensibilisation</div>
+        </div>
+        <span class="actor-badge">Base</span>
+      </div>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#34d399;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Responsable Sécurité</div>
+          <div class="actor-modules">+ Risques, Contrôles, Actifs, Classification, Menaces</div>
+        </div>
+        <span class="actor-badge">+5</span>
+      </div>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#a78bfa;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Auditeur</div>
+          <div class="actor-modules">+ Audits, Preuves, SoA, Périmètre, Leadership, Conformité</div>
+        </div>
+        <span class="actor-badge">+8</span>
+      </div>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#fb923c;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Responsable SMSI</div>
+          <div class="actor-modules">+ CAPA, Changements, Fournisseurs, BCP, Rapports…</div>
+        </div>
+        <span class="actor-badge">+12</span>
+      </div>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#f472b6;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Admin Organisation</div>
+          <div class="actor-modules">+ Utilisateurs, Paramètres, Piste d'audit</div>
+        </div>
+        <span class="actor-badge">+3</span>
+      </div>
+
+      <div class="actor-card">
+        <div class="actor-dot" style="background:#ef4444;"></div>
+        <div class="actor-info">
+          <div class="actor-name">Super Admin</div>
+          <div class="actor-modules">Accès illimité à tous les 28 modules</div>
+        </div>
+        <span class="actor-badge">ALL</span>
+      </div>
+    </div>
+
+    <!-- Packages -->
+    <div class="sidebar-section">
+      <h3>Packages (12)</h3>
+      <div class="pkg-item"><span class="pkg-num">1</span>Authentification &amp; Accès</div>
+      <div class="pkg-item"><span class="pkg-num">2</span>Tableau de Bord</div>
+      <div class="pkg-item"><span class="pkg-num">3</span>Fondation SMSI (Clauses 4–7)</div>
+      <div class="pkg-item"><span class="pkg-num">4</span>Gestion des Politiques</div>
+      <div class="pkg-item"><span class="pkg-num">5</span>Risques &amp; Contrôles Annex A</div>
+      <div class="pkg-item"><span class="pkg-num">6</span>Gestion des Incidents</div>
+      <div class="pkg-item"><span class="pkg-num">7</span>Formation &amp; Sensibilisation</div>
+      <div class="pkg-item"><span class="pkg-num">8</span>Conformité &amp; Audits</div>
+      <div class="pkg-item"><span class="pkg-num">9</span>Opérations SMSI</div>
+      <div class="pkg-item"><span class="pkg-num">10</span>Management &amp; Amélioration</div>
+      <div class="pkg-item"><span class="pkg-num">11</span>Administration Système</div>
+      <div class="pkg-item"><span class="pkg-num">12</span>Fonctionnalités Transversales</div>
+    </div>
+
+    <!-- Legend -->
+    <div class="sidebar-section">
+      <h3>Légende des relations</h3>
+      <div class="legend-item">
+        <svg width="32" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#3b82f6" stroke-width="2"/><polygon points="28,3 32,6 28,9" fill="#3b82f6"/></svg>
+        <span>Association acteur → UC</span>
+      </div>
+      <div class="legend-item">
+        <svg width="32" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#10b981" stroke-width="2"/><polygon points="28,3 32,6 28,9" fill="#10b981"/></svg>
+        <span>Héritage d'acteur (généralisation)</span>
+      </div>
+      <div class="legend-item">
+        <svg width="32" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3"/><polygon points="28,3 32,6 28,9" fill="#f59e0b"/></svg>
+        <span>&laquo;include&raquo; (toujours inclus)</span>
+      </div>
+      <div class="legend-item">
+        <svg width="32" height="12"><line x1="0" y1="6" x2="32" y2="6" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4,3"/><polygon points="28,3 32,6 28,9" fill="#8b5cf6"/></svg>
+        <span>&laquo;extend&raquo; (conditionnel)</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- DIAGRAM CANVAS -->
+  <div class="diagram-area" id="diagram-area">
+    <div id="canvas-wrapper">
+      <div id="diagram-inner">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="CLASS" height="1452px" preserveAspectRatio="none" style="width:790px;height:1452px;background:#FFFFFF;" version="1.1" viewBox="0 0 790 1452" width="790px" zoomAndPan="magnify"><?plantuml 1.2026.3beta6?><defs/><g><g class="legend" data-source-line="1"><rect fill="#DDDDDD" height="1411.5313" rx="7.5" ry="7.5" style="stroke:#000000;stroke-width:1;" width="759.376" x="12" y="22"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="399.3008" x="17" y="39.9951">The plugin you are using seems to generated a bad URL.</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="302.4424" x="17" y="56.292">This URL does not look like HUFFMAN data.</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="17" y="72.5889">&#160;</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="279.1455" x="17" y="88.8857">See https://plantuml.com/text-encoding</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="17" y="105.1826">&#160;</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="428.1484" x="17" y="121.4795">You may contact the PlantUML team at plantuml@gmail.com</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="749.376" x="17" y="137.7764">But you should also probably contact the plugin authors you are currently using and send them this image</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="17" y="154.0732">&#160;</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="232.5449" x="17" y="170.3701">For the record, here is your data:</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="17" y="186.667">&#160;</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="667.6387" x="17" y="202.9639">hLfBZnj7ahxthyZjnRefZDHYlKd38mn55ZKSgvjS5bkB1GGOrMGsk-HY5LsFjhIx1dnQZAup0ynrJhlk</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="659.627" x="17" y="219.2607">ovxc7_2V-9TiHBuggvBIOSGsO34hCoCYu_55vEDtPHKNLRrBoII9jqMysz7lDlIxSLn-5z6iAk9PT1MT</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="660.3516" x="17" y="235.5576">NP3V_iD_C9aqfCYlF_-vOKKsb00hihcugP8qAUCgoJFIkodfC_XCd-3SHHfNz2ulO3JCdv5PD2TsqEzR</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="655.833" x="17" y="251.8545">Nzjzs_uoqSx-gRgdG7YVnabsLdwVPFiO12FnkigBgFgGKXB_ICjyHxNEVRp-FjvItbtGTHLdsrGViA5t</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="691.5918" x="17" y="268.1514">SPrMqpohhcEWVXxHRKx9pUpy-A0e-GzAB4lhBE_ZJVvZact9NPoMEkrHKUG_ZlCqByW_k-olsuaKnG27</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="689.8008" x="17" y="284.4482">_HqRm5dspxfh9lzvHiZBlDZGGj2mFDyRz_4hB7jRv7Ms4JsXCxMd4-ZHEFOdRZ2on3UkePTvkf4Vn49_</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="643.8291" x="17" y="300.7451">qldM9Ls3hJddBe_f2F_hokIvVXYCsfnjtx6TGOjHlyr8sCrSekjv8zyzkiHnE9rQdsDqV8bsctEMLvzQ</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="663.6328" x="17" y="317.042">ttGw7BjTWQR3qS3sa4PAxofIvQH8jlSLsIJeRX0YPrySaQFnAhnPHgJda-BmzvIMv3uvF1PniRvFVgXf</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="689.8486" x="17" y="333.3389">-UJBE71dEWzt-pJ_S7Wy9-q_2FdmQW4_f1E9yKjQxlEiZ6z1gT7XSLqNISLcmuGe7C-dOvWnc7hXKCuO</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="694.0117" x="17" y="349.6357">rPkaedLnRZ0OtKoGmTG9lQbtb06WoRaQpi296SG9-uhwPfTaP5viuqo0qxaOFXzDhd3uE7J3iHmUrNjQ</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="665.834" x="17" y="365.9326">43Rfl2rC98PFmvTXYDRxlT8sWE35FJII2fspjxwFGV_SA8H_Xn4rsHUWZyFZ1f3qoHbN7ldclvuz4tev</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="679.3555" x="17" y="382.2295">4-fXds3fPtpvlCqmd2-GVq3fp_WI117ySCRybBjQVeSM0iTSSkzOrxiQW3YvAydNy5KQblpwttyYgDHB</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="686.875" x="17" y="398.5264">pLxGZv-bQVGne7BPArLxoPgQwc30KIt0Tq1DI1P5dbIbeHEQRLYWVNbiJ9VpwzNiyCTbI2Ot9FhtQ7Nu</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="686.5537" x="17" y="414.8232">urNuPMHLdi1ie2N3l-Zv3RBXArgo77WarPq3X80EBiYpV_2FJIQBqVZRqQkGMEHhS9JLxqDOwtGs7grc</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="657.1729" x="17" y="431.1201">y-il9IyXzjow1FD3Rit0Ov8rJ-jVQIu2FZzQhm-_bESO7OjlNts7eZ2C92eZdD-C-oXbHCawppBG82tU</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="710.0078" x="17" y="447.417">PhtN-HOyvm__jdh29kCWOvhDfss0ONjcNbTgccrCSs3Q6F014ZDuutDobMz0VfnRmWBsHNwNf7AsOyns</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="699.4668" x="17" y="463.7139">KQE0pmymDxs8E-j_cq44LScpEm0BY8gIzAwc8oKBve2VJcbUrC1gzF9rEBeXav2yd2yd9xEkVKbM2A5n</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="681.3311" x="17" y="480.0107">ZIwBgOlq9d5vVvl7nUQ9Ckba51qpgTTICaH4rT2w1LfWg6yNiv9iq_mshjyh5Na69HyelKdAEeRI4Kd5</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="669.4023" x="17" y="496.3076">v9x6rIxUlyqGA8gan5H6UjxXhvuYunja0dIMEdaeA9Zjy5Z55Og2u8Bfczlky3SalwQ5vj0gF2Nfm20z</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="673.2373" x="17" y="512.6045">QAyr9Y1fnGBz0K6jyOtDHP8bLH8tHN14gtfFnlTq_JrEKl8F32R3ZXfWoL1UxtaY1sqkkHwUeYGLp_PF</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="684.7217" x="17" y="528.9014">oInR9mYSfI8yFBKBOZHDvzSJ1YqI-q_ZWSubLbkRkC7AtZYDGIabiueBkuoWSSJf_EPwOdgYrGS19uV7</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="659.0938" x="17" y="545.1982">Er0zSyGzscHt-AKgU7K0kkDKYSlsBT4wtrEfBwjlqBCulNMHe2inrAheUx1thbKG6Ks1RfYze_Lxai20</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="719.0723" x="17" y="561.4951">8WEflo8u47yg-WQgMHZJimq75M5eyD0gWN-140XFo_Bmo6mkvRwq5Jq3xYm1TtV9jYwuUm8-0dfbSRRk</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="681.2012" x="17" y="577.792">Qi1Z6dXDOoXJo_jahyWQE6YvRRMMiiBywcrMoFeBTdiWS8cHeAfQIT4rA29alCBrSNhvxJkSSSUcbogf</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="675.7051" x="17" y="594.0889">DCBwbpOJTyu7FcXQDL34yhNmZn7ajwX77fKjPhr_KLGC4B4GH22LPurfrlbkLsSYmi4ckfkIuD9Ln89J</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="712.0586" x="17" y="610.3857">1nuQu5KOiR2RX15Pp5_FLhD_lGcZamMWUwbA5LJI8WTxChn1a-YbkmX14E5807RW4VrP4KBjQyOb-_es</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="720.2139" x="17" y="626.6826">JT2xfTeC8BGG2CS0sq2hpYXKW-3CASQr90eUKWAyrnKCV0dxi2HDyqpPOTWbQ2D0o1e0oe4tuFeiWg4W</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="700.5469" x="17" y="642.9795">G0QAhg1W6v1Wi_ebhtUqGb1fJU99vIBUWylTnbe0s4RasnZv8no8uTabqwn9304Do4NPHjJR6FKBLERd</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="665.0752" x="17" y="659.2764">A2s4jXKT8ynjLkxW3kQ8IFbjcQS0f4ep9wzl41AMimYT6i1p31Nxyl2NroVqSA_juIA98Y-LHKbl1Cxm</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="689.876" x="17" y="675.5732">deoQL0CYVMiwkctKF0NTGb8lQAjIaSeoCChsTSyMmy5SW2s7nsrU9FGf0jU-IB1y0JnLPZE0oaQWEdny</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="684.3047" x="17" y="691.8701">YDEwGso1RYY0cHp-IcOxq4L5VejfJwDe53asHl4LTt3mw7TvpLR8NGah6yL4aZ0YryR8VPte0Y6f6Y0u</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="665.7793" x="17" y="708.167">XsrUMfS9AvdNIlMIb16p3iPi-7wV5v_JDE1mz0OYUZ6PoeKvHl0wLZlj31rDWBUPiBrH1Zf6-3hs4Gtn</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="699.3779" x="17" y="724.4639">IbFeHz4bFL1xUdZSKKpel_xyFqey8v0T3EHHMUPhL1mkRbzGm8UI0OjEL98mOjXnjHN6h7P9LSaBMxJz</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="703.3223" x="17" y="740.7607">FeNy9NsY5-Lgm-8OITf17x-AYn-4NpLBmaG8wey5DVZo7B0v8yq7ITHmVCVN18GI-G7KWlxDZHcBl0nA</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="702.9668" x="17" y="757.0576">e4qXwnW-xw3FG-A5hAwoCv-BRez8jmQHPhmMWr-i9c9r5aqLLSFldK5BUMj1NrNqc0iXMMWfop4Stnco</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="725.1768" x="17" y="773.3545">ugDue92AX6HW-dZDYhZLVG7x6IPOcYPR2bMP4iTmVBSlOsZJ426mWOAgIpWzhSm8SlkdHcOqsUnwF9k4</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="697.2109" x="17" y="789.6514">rwlJmR7VXcErVVb4lG42c33iicoSRBCuvJwQ22gTMaEgnWXabrNWu8KWoBRkqcYoPuYV-IZc3T9ghX74</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="735.7861" x="17" y="805.9482">BWRn95_N6F32aR101AF5woJ3mq6DXoHZ1BABWRo4WZglDwpEE2eM6v3MIXeZXbsMfzB3toks8VW46J7W</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="674.7139" x="17" y="822.2451">yAW86N7h-bqKXc271j_eSf97CDZrJ-sC0Tk3Bg_u7lGh4eNNqUpbxFKiEks1Lu0RqcAdJhfeLYQtpPKM</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="687.75" x="17" y="838.542">FpuuugUhvMXsVSHJzJC9SFSxIHjW0M5cos25z5P53BkiRAiKQA2KosjibbGgYSoOIpVWOsL7JBOTPSWe</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="702.9668" x="17" y="854.8389">wHc8vGvRfKpPsJ41nE1HMOab0m3pZt51OK-hiDarOClhwqaMdB-AqtnRCuJNbarwCPuDIpgUaQmzYsT3</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="678.8154" x="17" y="871.1357">K8qeHzLacGzhSSV8hWiu6IF2FTlOabGCGpSiZp4jIWngf9Fax5ExBpFU_1ezUBOwV0JF6jrCPYU4rS4b</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="693.998" x="17" y="887.4326">otQm4fRY0I6sATs9B8liy11VFwKzSexYEQszBsWwnba06KrA3VdfXhAVWM2Uot1JLcjo2vqXwaZFtrmm</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="716.96" x="17" y="903.7295">mgGtJR8DUBroAyz0CW-H38Q9Cp7CV1BMSE_69PIp3VZo_7RbfmghNlY0sBMcP4dtUPbKUV512M7K7Hv6</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="720.7607" x="17" y="920.0264">yUhm24u3UwIIwsOZm9wv52TCUb0st8Fk52aZZBr1Ko6hQQ945WNpSwtaUjvUe175th1rwB5kN03mfNvF</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="689.0488" x="17" y="936.3232">w7jURh3ZD4d5Y5s___dAd-g4MIQZM2O11K7IDyBORzNSdUAzaGeqkesR8iOtujYtzKFTk5N8Sc9fdh3Z</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="694.8594" x="17" y="952.6201">C_8E87cJw2TGlf6cVQTzj31Ymo5qYe8VCB6Dog90GsVOXkGsMgXgsJVStNTRyZtWYPlqYfBWN28IxbEy</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="716.2832" x="17" y="968.917">nKZZHD4w-LOQVM6-E7nSifGOdVQaTdX9vdYkAc2SNxeAD9al8XDD_CvXtuRkObGAzwVxEDioHO62sM-5</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="716.6318" x="17" y="985.2139">0RuHnRxVEZLv3Z7xZbO201fAShuHldxGbkGE_3jBOAy1wHEWu0tDDdc11mFVmxudYpar9OuHmlv0ttc3</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="708.1279" x="17" y="1001.5107">SsVW9_pQG-x1MR6diP6qZFZrX-sz1mH-ajKYp321FuW3qPVZ1PPO0CwC3zq3AqecIoMc4TH1vrHSFm5T</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="696.8896" x="17" y="1017.8076">hkQeniNyRRR7O1VNj7iWB-W5HaG7LYix019NK1YZ5L8-at2Sa0kGXAnJkpaxxhyQNSFlAzYQO7AxEdny</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="657.2891" x="17" y="1034.1045">FPilJtptsR_K_07Px220avo703i-WgLITHGy_FNdFrlzvWZfwjNLoWoBm6uxOq4Vv26fEa1lI5uwqi21</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="680.6543" x="17" y="1050.4014">WMM1SoJJuarfKl8q2oQArpnSmGt5cIvu6MCfoHg85dGJEE8alzJY00cEsLA451RqPIbfZKGUU7ebhEKM</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="703.5068" x="17" y="1066.6982">sDlgv6Gg20mO24GopxZos2aGtuseGtbCvj0aOxO9Ky8OY104xMrDiyC7hO5fepTogX7zmU2pKs4J9ASE</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="667.8301" x="17" y="1082.9951">Jkxuh3IUNCskPz5gAMxZvAk6atazNlbZYOxM5_To7yhgyCkEDjKZod34jOTjrzRgTCJPDKkxJybE7CIp</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="682.0898" x="17" y="1099.292">X5Z6_A9TsSh0iG66-mXga-Isxbpcf_9b2SDRSrimC41iO7MkolZLMyml2taOukLHyvO3xsyhlKOT63NA</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="672.0068" x="17" y="1115.5889">eBFNWFdyTlX2rCzym_5BXJifLlZYTa-TI0sCo1wm6zSaLL4DEoacvziCb5Vpkf0ZnNEoYTNf_C08ve7R</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="705.0381" x="17" y="1131.8857">zLOafLNWuEfA3YDc1vqKdkNDhJaGAOLVaDvjaSSRcAMovi0xkVFR_1PwZ6v_FNgDswY8G1XSHs_2PJGw</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="708.21" x="17" y="1148.1826">vPM1PRDhQQPXt7cm6qwmMLPY-Q_gLGo5yN8U7Ib-1gnaWK9QRTLtEtNaMTRi6rKOgrKl0mEh1eXLIxgc</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="691.6807" x="17" y="1164.4795">3td2KUyJPf0K3CWQ6AyN8B8F_zkKqRqVweJ48Z2XzFYXpfEdy7-ervH11Phz12g6Ye98fYTumHX5y_5C</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="678.7539" x="17" y="1180.7764">bApyEIDxIJOUHMHoSRDgpdY-x8amTmsocjz419o5IChy-QHw28T9itu6QYxhyedo9lPIxzcp5_oLajQm</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="696.9375" x="17" y="1197.0732">zOQZDrozuUaDNsy4UcEWDuPQmz9xN5q2LoVWjeRf10OwKt0HgOvb62r0yVZ0Y4I7Z-ER9JkVwFr6Fi-J</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="654.6094" x="17" y="1213.3701">YddIZYpvJf4JjBrEs--qWqvxq6aFsssdtsbRdRRTQJkTTeU_q-7lTFWx7VvkXx_RuUTs-BckKYWxrq4V</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="682.1445" x="17" y="1229.667">RbHu_3LiMw7idQUmTLzlM7h3rXkEtd3rXgStVAtXwCCSVPYdK_FqOLvhc4xD2_J6G6yCjOQlhyVNr-Fh</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="679.4717" x="17" y="1245.9639">wm64EUgKhB1JkfIFKJlkY1faBp75eeDMQwYtx7whPRLQTglbj5gktdAzLilNMrwBWzVYuBKu-2qEVek3</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="678.877" x="17" y="1262.2607">t-BWjpZuhVN1jb9ljLORj6G9Mh84BLc2bYn1IvQW9KlGaYLeoH8qLkHLudpvQdGj4FnJCG4cblRahva5</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="668.2402" x="17" y="1278.5576">hQ7UWc9ERrcjbjrgEQsMssfvIhxePX4kXPGz-KAxWfHDVWFL5Jvg9KcQ9hjkiC9yxPMpUjlzaCHi2tyV</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="642.1611" x="17" y="1294.8545">7_ulQpq6XmcBc6s-82EJijxBYs4i1-0xr00951ibUqOiEBCd9JGhwGurX5aVilZD-ClJxJ9yBNBjDzy0</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="670.0518" x="17" y="1311.1514">rxJUq1SlIBY29hvSopOlNfmWqUhlIl4jA7mwOqz6Bozv2eIAHEFVwXkQVO7i6tJwE3FzGb7UaJA6jYyc</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="654.165" x="17" y="1327.4482">ijSIRQAs96fpXchrx9a7xsAF45fTZYMxR8DYq-UQVQxiyym-H_HvNIdvyiOVrYb_QvfmLqZKfIbRfIlv</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="690.8057" x="17" y="1343.7451">kdPNNFWYkXo3hIlPkgunJKhhUaQNr8thjxi-8Mlp48mBQmsbsYr3xN8Tjh4EMwx3TemkkGpRFIRGelCM</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="669.4912" x="17" y="1360.042">L4ZH5vCioz1BqzSriV0sxMqb9oObiBfsvnFcwjoD3vSQjBfHm8Vpgne-rbEkOTZ8apRo31jv_gSSYdqI</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="705.0107" x="17" y="1376.3389">VSTZIRz5uY98W_bzWvWlBUOVLnKx_sPKVBaG_xYEfjgPh9WX1VMF2uededoW530u8g3giuuvnn9Fmbfl</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="708.3193" x="17" y="1392.6357">Lpd9GBfRq0qROQBM0HYV8iqHT0DSi197LMAqj51WMgZf-uI5r8ctr9HqAFzeI2xqmmW-Oo3NDp1XeUax</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="679.1025" x="17" y="1408.9326">6a-Tio7zZ4SiJQfyq3M7jBIyNkVk9QFDCoFHa-xbcS0clSCrqDiTVAAByxyIBseOTqSAw_QFBbOBMqUQ</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133.6152" x="17" y="1425.2295">nJ5G-dSmfzwbP_yF</text></g><?plantuml-src LNd7peJAakQUf_WVOBWNMq2l6YYyDmK56uJttlFqNNswPwIH4DGYCp934V4PLPUN-P01RfN_JTrUriFVFUv_yPB_xMizb7zhdlVhtpR-_PRbIxpbsL_ybyJPtyTM__NRLg___Uil6_FrRnYtlsuSsx-kRlC_ySFp6gt_PV4M_mi0d3p_gxPjMl_Zt_-UkdZOzhxxLphs_zxoQmFp8Hsptta04FoEx-FxBns7BKwtl-rtC_E_rtyqzM_Bu_ultlx-Ru3_BFku_YSCmEpRFrTVgt7lVfVirl5lMiOaJhh_FzZ_fXdlMpKkw_zBDzsN9H-st-B_IJmUib_olzTlJ_zx_HAj-xZC0O0Vbty2BNawBjd_-Qlot_RwdqZBFzd-1m1KQi64GqF4rRLLTzWCTbw4Rp7eb0mb-m77GyKfZyR1avQ11S5OD65jGJ70rPLlAkc2iy4AwNs2xc6Hgwu5nkDAYGZnGCgjHMOlouEH34TO3HIhs94DzWZ73-wzcQAYg_R2Z994DRDshm_HlJlfSjG1n9zNJRUKwSAQ2-WcwaNrEsAfU2xOeECZy30KPKqWgAghT2zDSgO_R3dAlDIEMS56NpO3KKSK2_r1ziv0PJOxSFEDkElCFJQWFyspHliuEnTOscKc484tnCcgPgTdyhK18_pGrYLJygMWV9b8OfjRl7JEioUGRmvfIpR15TLiNGIlfl4DSCn5cwUngbBEzxwNQ2iNDNsc6wIX71GUci6wYk6YKFQEy5TSIZT7ZMiNKVa8KTYnCtFxKGkEtRh7oY0W1129iztZsJfTHKLrpo7M8TEzGq5ea9v_t_OJOHL3DFP1Q2ichr_sqZ8C34MEDp8xHCO1_RIvwHvjWNa3HaN0t6KQfQve9MSPaqS5maVLs4g7zmtOjHYQxNgvWj68tRsGAxiuUTiSv7C_RIqE7BLOsVgUFJ9PqutJrEEnW6qJJe9fND-oqTb1rnWpwMiifCCIoQPpr5MIS_iB1UPoEx753tGrc68fPp78zCyXQGUw7pni3hLzy5xvBG3m8pCS0MUS_spW94SEuTyKE4S8d_MMZqK5p56tqbXNnzNXwu5Bb_WwwgnBZfhskv0JB9WPXp-aHFLLsDq05hEDyqmTx10oDcKKUbUWEYlP4kZbZtPiJJL2lHo10lVgD0itDl6ZtkSHcg_OuB_FkyhGdIDaj1Rxpw8t5e2XTj4X2qkH9jyVxZTusrVdaglFeJWlIn9Ih5DpdRpWHGvDYj5tm9PL_FZXpOTmWSwZcEX4bwNTiJ_ObXy01XRVR4KBSvkENnVq6G8AtemMK-HBC4pS3clV2TDONkveKEqwJliOorLRFXeSz9tfDwvOIJUTstO7vLjaW4czXF004yiJXfnWJ7fHhz4ihJD58KNQ87U6tn9iubaY9Rd8MROQ-9wUr3BbJUUZrpVh9X9YR1HVRHQXxy2-wBkf_LgzXkiSqT4E30_KPhxqKeu4uSUBEQDV4kAOEfYyNwbaoM9cBxHdgnKqJgmSIbQl-MsScx0IvP82DrXtb7H_dsOyOVwDslK66GUvo63ZMTAEyE5ZLJqO9PnZ44RJwTjAv272KaWUPc-G1STl8hBnEKsCG2BR1p2hJGT5upxwA6go2g5QrZUEwbsiAsJeJQedRfcc2-kigFNY8HWBt_k-lST4Uo2l6EpUPrPHF_M2e5VZ7bP0iJXewk_-VQqa1pPHEcEOwgGJrqDCG9RIGvyfEIhCaIEUd2QVXONBXwSMZic_yO7SsU-XBgxrb4H3Q7m0GkbaIgERgGm_lACZXez5iMqIu_0ybQuhiR68BIvomchXbwzRhm-gdgD-hPgxmlNuHObt_WDZcijj2LCo73YewxL8rwUxPu4cotZ0nTUdkRxLiGVxqCHG9cbS5kSq5JOt7kAuKI8xoHJfqxKtwiJTQU570vKyeXSz0Zs0HTyB5S35830FfBoQszZUeaacgaXkeWvZvLRmG-VEaRnmIaVoA6AZuRVmHnN-N5iSmElSjkBvoGD1dIAJ1qPfiAa-S0g9l7b6OOnGV1-F8yF1BFr6ElITFL6JrcvPWjx2u2r8SLBlETFke-yuSX5nvcbaPR083apj7W5m2_Guj_2igRY1j59-20LgsxSIEDtAkDYvBLp1d4qtC-pUwPgO8_Mmq5N-kU2jIXJXfQomNGHF7gbNN2CGGFfSqOtaZX5t2VfMgOcXNFSpWMjuVh-XqjT168E-_1Wn_VZgsyC-ProUqIleONVpg2OuzqzFWb1M98vjju1Lm-4h-xwDyIkFKHDNjsznh-2mRKshQ-O-qqKR-Pnnizfto5JCwSAIN6oX4IhkM6PnzEguvDPnd4-QZ6K1l5dcJ2P3Tk-TuDElzLPHxAxqFXo8k3c_154eZLajaQ8ABCPWWeWWghalnT8bhRewGLzZQLkqqlwcr86aP00UTcl75QEs4ViBu-Q4HxnQlQDEICEur_pFcT2uAakaxrviDS0n62Hj_uKn3YSXmlOnRp4nvGT7jv60KRu2iejSXPkp92C82Ej0wunKK_1LV11bQSTQA2Z_AFwljmQ5zQ3igX7nVS-JQRX-OY5lQ8HpQConRUVpsYyn7n0WYwvAs7yTi5z7UL9jdrb8u4B-KDGXCH__xjmXoQ4Li-Dr20zo-5NGZPFv72WKmjuZffjY8zilNc5Kpiu06bcnvgkuv3qqQdlvQ6kH4fyqgUL01PPFrFbq64nhTH-uhngUK5Y_xWxHbz6R7JfgTecco01KHINfOFRgWImVBHLY0q-hppRT51xINI4XEujkfDZ9HvQjLjUvjVx67HzPYM5TFXGl553p0IK6lY5vKCsGWyROyhbik87WpPt2Ei9s442fE85IQbmpfk9UtXJo-SvnD5x53bFT3UrFmZqcrIPr8QvUjuh58HGijqrwvfP3mQju1T0EV7ydQeL3qKUcIvqc9V1hGckp1edJmuz8VdDm_q16y0bVvfWhXzX1fnfs3GelRv_vc3MpY71Ol42qMZ5X6m0fuNFnmH9UXQzF5ZgACkLTTDtydD_a0Rae9uhQnwnKk6_jv15wyYD1HiEf5DaRpNTeHFrL4IQbEZ6ZNV83yBb-K_eQuA1QzY1fI6u14nT81mE8wPFAzB50dlcDlxrm91Ze8E-Pa5onzrXFXqb10WL2yRlh7Oefqq433UJO_3q77xnEb1T06g_eSsGFaB7pXsnwIpIhNtSlO4sbr8B7iwewV9SfEFFH6bXVz3c5wg-c-SKuOSxsK_V0Nhxtd4BexqlqmIny1rMeUW9nlIJJI0FJHXBDn6gtznYdCzPGnf1NxnjqAKt-KpazwNHj9gR6l7w6awTQ35ZEJkvjmlkctE9v2TO969AYQ5sdesF_8EkGJmj1IbUBkNBmlt6owFvEAlx8sEsS1gEv1nueXIdgKcNr9J20yUs1mYFzzSFYs8OXcERnSvJHVdwzlwCOmWpzMp9YVbXsxtFYE2JNNWUgITyy_2QhLZmCketjIde-zf897xXfdtpfH0Kci_9D4G9kejmfA89zXpzkNbd8RL6cZ7QY4oeir_NvCoKNhzHSkyBg3jbpIcToLUHgO6sJgMW0F-txNdwgG_kkdYFAZynI3kzSajZua8QduuhW3sxYADFMDbqh5eqeuzhKIIAKWJCQqkJvngeICcEufkFdm2ccv24STg5CvYfZyC31ecR42TIZKxZXiA60LVsE5uFjgdEEjOm1wNaRR7QNzIHUJjRStz9KVcAhVuBLHG65d7-DhSQfy2kQuv6LN-ylYKTuj_k55LXXSkfmmXh97yg2ukCBvovcuZyHd3yVnZWzIEPVpSAQmGTR72m1nitgiS8E8EcrqkvACMHNtp3iyQVoEFaLSDRwCAj_3aaClPI5Hhsi-5Qqvsl8PznWMKsR4Jb-lHo7_BRqFT2NmYRRvFl3B2DzFn3hWo9A_jJ3HB0Up6WE5xqeKvhGtwH4X9qKVLdfNG2jZ9QQMBPzp4JvU3YCQ8H2YCSBk3zLZs0x-ZabwLoDiAVE0qTSzfD0wqRoBOx4OSWii3A-AikYCDpN9-VSuazpV7AOmBSANau6RtK8xGlzu86JQ3vsXOPlBCC3V8sYAACpiCGqoGern81XXP3UDsFOZ-va7_g9XNnkyzKcQsFRcs1x5DvjSPrqKgh8Vd40DY8vaaZb4t65hdYbdkK-FsmA-X6VWvpqMERr7aiA4bRF-BR2gfNVSfKzPzDT-mutFp2xEIWONqT8wKgu6nYKy2S-i1DK3SlJNY1734vT24RcMR6RVQaZ2rewHHpzokdtZuh9x_ldD8_ljjkjaGZqSteNzwv7qNWXgmRY06Jluc1V7XUg1neILvWO20GNj5FjOfTTGj8AN8GsZ47Vy2bo_WvjxtUMmd3FU_srPy4KBvInYtrtGDkMee2pUZuLJPO0Nh1clxBQVCqX7ovVS7tWNWJZHWac587vtKTdqmjXqpGWzcJHPqRfEK-bKKinLuIFHNJu7dU1ghNoeTPlsxO90_RqXgXz1lHnCHO8DQWl2APq1Gv2N2N1U4ES66g5Bpt8xHHVLtLR-WyVwIUm38A-_Y4ftgmxUPksrOwK22BC2q6W-1W92Ar1lrH_u2pS4Qzd_FApgdvOd8skZZ_mwb_xPSoOTo2lWelXJiBtSwuH6F0r3NP6MTxZfVW9oXaPBNgP1gSNDZoLZlsbiSKebYIU2JB7aN7to044fTogqXWEsxCf9KMe29yFyHC9t0zjrdTN7Y-XHA3UG31XdAxm1p2niErhBcm9-vExiN4Pb7AJHW13sAKjxv_R8Ie3B_B97SilyVGVP59-RfgY7GwGssklKEcZisjhFdX9QrTuqEqhtk97xv8mC2uDZzoHkAloPblktIZXcA5OOxZDyjYboyhcMsal-KuuWfKcu8k7huYctDMfe5fulS3-MyQWj5x9b1OHbI3EstQMkcSnk3O8hHsxKDNklaEssDXRLRmF0xtMk-eKmtsX-e_r65xt-Unsk-_Fapvt7-7CLwuBjGi3DmPT2LhP4Jxxr-F4gegzkJ5EZwTc4zoRsW8A1vqR0rSl8XOYZvomWKSruaBz4GzNq6ZmJk5ZLh9MVrToBD26wiNleuaTnqvfRJngw6eztevWymnVnw_uvNiz0rA0luwuHeWf2oTmc1fiskyVafZVZKZxrtpscce6e1MLgZ3Yjqv-22a1uNA8VOMoR5VTk4sFDTUkNujYb8lIGJrNmVbNbQuo1T0jGvJFBPi5fA2iRxteNmY6vAEdLMPxzivSniWG-Jvyy9qABhi9C5yE4ORDwe6HyXNa55a4xjwBN_oES1P8wEdcfFSboSP7rCGV6R_BAGl0Yunxjr_7j7amc1fnYQrkq19FX7IfUjjVLl2RapmRgSwKhYVzAUbHZHkh1nx32j_B-EoV-AslD_P9EV-zcp_AeIuTdn5rzFmcjmiOCavbWyJIE98Nia2tzzDoc4I486TJSkkT_FBYQr06WYoJmc0wv0AJ6sRXLX2S_VcuvbVCh-kQRMjYPxRjMdBhkladca6YStd_8hoZ_LwHlN_S5MJILWdyQ_cD8c0duXwXQgsTH9rPdzvLdquZAdJvjjoM_JwbitdqzZrPrl7C85CYVZRKeqgnwur4yajutMnZM5rrU_e2yXNmwp2C-vHAnS1oMqYy8dVjpql6p4JWUVxMh3FOBkAiJ5krtB9B6hnijun-rFfdr7viuZzUi3FA3Y8pv-Kj2cmWupTJk5S_kTSaLDUeXjsy14ghI8nHKoG91bWwB9zIEY4Er7mKoLbjHNNFfiFAX0RZ1vaLi3JfxBWwOXoeBEBZfnHdBscJD4lvus5jNOj3ggxS_6BjrnGUKA4lln3Vdi-hk7oKb99QLDMqDKlTbwbDdwPxObQiaUts02BQEskQNzy-PTBN2f889zVDnGGhLiCWT2qGHE5mdNnce-OODgDaeJg5VVdYiLTtuHjaE_cIgPlHcURzt12mNF9dXfrEOWA4gWvdd8pkvytz-LDrKeSrDD6VnloycF4va5oYHOxtpczhUGPHlpRvv53-4HBY4ylqgmdk5AWRHx8jUgLUnVHDg-MYOk9QQHx32pSCjEidAe8P_5YUTTNttODY91wwb1rtRNXBa4JMKVJg72g5bDY5r1r0cvcwplj1-ntHIkhCjjm7MQcgdvpI5tAhcgi6IQsRCB9dh7vDrc11BvrqcmhZjFD2tRnlMs6oUSaMyexL01KBHVnWw_61cVdv8Py7hPSs9zHe93LJhCV0fsSplj73iHgc47lIcyeX1vU4Qmqt9EF97b6uEQBISO9ibW3FSKF9Vl0ze4W_IXx_y3lcOtZge5pHQYeU4mlHJuGLJMbMbF-5FOr7zZpxZR6Fez1EbcXPx_in31JV9qK7g5D62KnXpz1i6nQZGMBWaVKikj3RgM6AK3LwRd3Orygm07S9NyXqMoXnfladbv1hxdiVD4PKVq_mD__45_3weN8z4a-8ERLi5VUCQaJ3IBVUUYrbyMzsvCKOl9BKWTBEOPVvNRiUJJFtTKlCcXlkpvEUaSKpYS5eyyS21XaNmCpfY-TCpEZcWNp8kd_-9Val?></g></svg>
+
+      </div>
+    </div>
+    <div id="minimap">
+      <img id="minimap-img" src="" alt="minimap" />
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span><strong>SentraISMS</strong> — Diagramme de Cas d'Utilisation ISO 27001:2022</span>
+  <span>88 UC &bull; 6 Acteurs &bull; 12 Packages &bull; Générée le 29 avril 2026</span>
+  <span>Centralize. Secure. Comply.</span>
+</footer>
+
+<script>
+  const wrapper  = document.getElementById('canvas-wrapper');
+  const inner    = document.getElementById('diagram-inner');
+  const zoomLbl  = document.getElementById('zoom-level');
+  const sidebar  = document.getElementById('sidebar');
+  const area     = document.getElementById('diagram-area');
+
+  let scale = 1, minScale = 0.1, maxScale = 5;
+  let panX = 0, panY = 0;
+  let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+
+  function applyTransform() {
+    inner.style.transform = 	ranslate(px, px) scale();
+    zoomLbl.textContent = Math.round(scale * 100) + '%';
+  }
+
+  function fitDiagram() {
+    const svgEl = inner.querySelector('svg');
+    if (!svgEl) return;
+    const areaW = area.clientWidth;
+    const areaH = area.clientHeight;
+    const svgW  = parseInt(svgEl.getAttribute('width')  || svgEl.style.width  || '800');
+    const svgH  = parseInt(svgEl.getAttribute('height') || svgEl.style.height || '600');
+    const scaleX = (areaW - 40) / svgW;
+    const scaleY = (areaH - 40) / svgH;
+    scale = Math.min(scaleX, scaleY, 1);
+    panX = 0; panY = 0;
+    applyTransform();
+  }
+
+  // zoom buttons
+  document.getElementById('btn-zoom-in').addEventListener('click',  () => { scale = Math.min(scale * 1.25, maxScale); applyTransform(); });
+  document.getElementById('btn-zoom-out').addEventListener('click', () => { scale = Math.max(scale / 1.25, minScale); applyTransform(); });
+  document.getElementById('btn-reset').addEventListener('click',    () => { scale = 1; panX = 0; panY = 0; applyTransform(); });
+  document.getElementById('btn-fit').addEventListener('click',      fitDiagram);
+
+  // sidebar toggle
+  document.getElementById('btn-sidebar').addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+  });
+
+  // fullscreen
+  document.getElementById('btn-fullscreen').addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  // wheel zoom
+  area.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect   = area.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left - area.clientWidth  / 2 - panX;
+    const mouseY = e.clientY - rect.top  - area.clientHeight / 2 - panY;
+    const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+    const newScale = Math.max(minScale, Math.min(maxScale, scale * factor));
+    panX -= mouseX * (newScale / scale - 1);
+    panY -= mouseY * (newScale / scale - 1);
+    scale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  // drag to pan
+  area.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    startPanX = panX;   startPanY = panY;
+    wrapper.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    panX = startPanX + (e.clientX - startX);
+    panY = startPanY + (e.clientY - startY);
+    applyTransform();
+  });
+  window.addEventListener('mouseup', () => {
+    dragging = false;
+    wrapper.classList.remove('dragging');
+  });
+
+  // touch support
+  let lastTouchDist = null;
+  area.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      dragging = true;
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+      startPanX = panX; startPanY = panY;
+    }
+    if (e.touches.length === 2) {
+      lastTouchDist = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY
+      );
+    }
+  }, { passive: true });
+  area.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && dragging) {
+      panX = startPanX + (e.touches[0].clientX - startX);
+      panY = startPanY + (e.touches[0].clientY - startY);
+      applyTransform();
+    }
+    if (e.touches.length === 2 && lastTouchDist !== null) {
+      const dist = Math.hypot(
+        e.touches[1].clientX - e.touches[0].clientX,
+        e.touches[1].clientY - e.touches[0].clientY
+      );
+      scale = Math.max(minScale, Math.min(maxScale, scale * (dist / lastTouchDist)));
+      lastTouchDist = dist;
+      applyTransform();
+    }
+  }, { passive: true });
+  area.addEventListener('touchend', () => { dragging = false; lastTouchDist = null; });
+
+  // keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const STEP = 40;
+    if (e.key === '+' || e.key === '=') { scale = Math.min(scale * 1.2, maxScale); applyTransform(); }
+    if (e.key === '-')                  { scale = Math.max(scale / 1.2, minScale); applyTransform(); }
+    if (e.key === '0')                  { scale = 1; panX = 0; panY = 0; applyTransform(); }
+    if (e.key === 'f' || e.key === 'F') fitDiagram();
+    if (e.key === 'ArrowLeft')  { panX += STEP; applyTransform(); }
+    if (e.key === 'ArrowRight') { panX -= STEP; applyTransform(); }
+    if (e.key === 'ArrowUp')    { panY += STEP; applyTransform(); }
+    if (e.key === 'ArrowDown')  { panY -= STEP; applyTransform(); }
+  });
+
+  // Init: fit on load
+  window.addEventListener('load', () => {
+    setTimeout(fitDiagram, 100);
+  });
+</script>
+</body>
+</html>

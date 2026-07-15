@@ -1,0 +1,581 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════
+// LEADERSHIP & GOVERNANCE
+// ═══════════════════════════════════════
+model Leadership {
+  id               String    @id @default(uuid())
+  role             String
+  assignee         String
+  email            String?
+  department       String?
+  reportingTo      String?
+  deputy           String?
+  clauseRef        String?
+  responsibilities String?
+  commitment       String?
+  authority        String    @default("Operational")
+  policyRef        String?
+  avatar           String?
+  assignedAt       DateTime?
+  reviewDate       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// RISK MANAGEMENT
+// ═══════════════════════════════════════
+model Risk {
+  id                  String    @id @default(uuid())
+  title               String
+  description         String?
+  category            String    @default("Operational")
+  likelihood          Int       @default(3)
+  impact              Int       @default(3)
+  riskScore           Int       @default(9)
+  residualLikelihood  Int?
+  residualImpact      Int?
+  residualScore       Int?
+  status              String    @default("Open")
+  owner               String?
+  treatment           String?
+  mitigations         String?
+  riskAppetite        String?
+  linkedAsset         String?
+  linkedThreat        String?
+  linkedVulnerability String?
+  identifiedAt        DateTime?
+  dueDate             DateTime?
+  reviewDate          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CONTROLS (Annex A)
+// ═══════════════════════════════════════
+model Control {
+  id                  String    @id @default(uuid())
+  code                String
+  title               String
+  description         String?
+  category            String    @default("Organizational")
+  status              String    @default("Not Implemented")
+  owner               String?
+  annex               String?
+  evidence            String?
+  implementationNotes String?
+  effectiveness       String?   @default("Not Assessed")
+  controlType         String?   @default("Preventive")
+  cybersecurityConcept String?
+  lastReviewDate      DateTime?
+  nextReviewDate      DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// ASSET INVENTORY
+// ═══════════════════════════════════════
+model Asset {
+  id              String    @id @default(uuid())
+  assetTag        String?
+  name            String
+  description     String?
+  type            String    @default("Hardware")
+  classification  String    @default("Internal")
+  criticality     String    @default("Medium")
+  department      String?
+  owner           String?
+  custodian       String?
+  vendor          String?
+  serialNumber    String?
+  ipAddress       String?
+  version         String?
+  location        String?
+  status          String    @default("Active")
+  purchaseDate    DateTime?
+  endOfLifeDate   DateTime?
+  lastReviewDate  DateTime?
+  disposalMethod  String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// INCIDENTS
+// ═══════════════════════════════════════
+model Incident {
+  id                 String    @id @default(uuid())
+  title              String
+  description        String?
+  severity           String    @default("Medium")
+  status             String    @default("Open")
+  reporter           String?
+  assignee           String?
+  category           String?
+  impact             String?
+  affectedSystems    String?
+  containmentActions String?
+  rootCause          String?
+  resolution         String?
+  linkedRisk         String?
+  linkedAsset        String?
+  dueDate            DateTime?
+  reportedAt         DateTime  @default(now())
+  resolvedAt         DateTime?
+  closedAt           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// POLICIES & DOCUMENTS
+// ═══════════════════════════════════════
+model Policy {
+  id           String    @id @default(uuid())
+  docId        String?
+  title        String
+  version      String    @default("1.0")
+  status       String    @default("Draft")
+  category     String?
+  owner        String?
+  approver     String?
+  linkedClause String?
+  scope        String?
+  audience     String?
+  content      String?
+  approvedAt   DateTime?
+  reviewDate   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// TRAINING RECORDS
+// ═══════════════════════════════════════
+model Training {
+  id          String    @id @default(uuid())
+  title       String
+  type        String    @default("Internal")
+  assignee    String?
+  status      String    @default("Planned")
+  dueDate     DateTime?
+  completedAt DateTime?
+  score       Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// SECURITY AWARENESS PROGRESS
+// ═══════════════════════════════════════
+model AwarenessProgress {
+  id           String   @id @default(uuid())
+  employeeName String
+  department   String
+  courseId      String
+  score        Int
+  completedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([employeeName, courseId])
+}
+
+// ═══════════════════════════════════════
+// AUDITS
+// ═══════════════════════════════════════
+model Audit {
+  id        String    @id @default(uuid())
+  title     String
+  scope     String?
+  auditor   String?
+  status    String    @default("Planned")
+  type      String    @default("Internal")
+  findings  String?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// VENDOR MANAGEMENT
+// ═══════════════════════════════════════
+model Vendor {
+  id        String   @id @default(uuid())
+  name      String
+  service   String?
+  riskLevel String   @default("Low")
+  status    String   @default("Active")
+  contact   String?
+  email     String?
+  contract  String?
+  reviewDate DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// USERS & ACCESS MANAGEMENT
+// ═══════════════════════════════════════
+model User {
+  id           String    @id @default(uuid())
+  firstName    String
+  lastName     String
+  email        String    @unique
+  password     String?
+  role         String    @default("Employee")
+  organization String   @default("Default Organization")
+  status       String    @default("Active")
+  mfaEnabled   Boolean   @default(false)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// COMPLIANCE & LEGAL
+// ═══════════════════════════════════════
+model Compliance {
+  id          String   @id @default(uuid())
+  clause      String
+  requirement String
+  status      String   @default("Not Started")
+  evidence    String?
+  owner       String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CHANGE MANAGEMENT
+// ═══════════════════════════════════════
+model Change {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  type        String    @default("Standard")
+  status      String    @default("Requested")
+  requester   String?
+  impact      String?
+  approver    String?
+  approvedAt  DateTime?
+  implementedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CAPA (Corrective & Preventive Actions)
+// ═══════════════════════════════════════
+model CAPA {
+  id          String    @id @default(uuid())
+  title       String
+  type        String    @default("Corrective")
+  source      String?
+  description String?
+  rootCause   String?
+  action      String?
+  status      String    @default("Open")
+  owner       String?
+  dueDate     DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// OBJECTIVES
+// ═══════════════════════════════════════
+model Objective {
+  id                   String    @id @default(uuid())
+  title                String
+  description          String?
+  target               String?
+  progress             Int       @default(0)
+  owner                String?
+  status               String    @default("Active")
+  priority             String    @default("Medium")
+  measurementMethod    String?
+  measurementFrequency String    @default("Quarterly")
+  linkedClause         String?
+  linkedRisks          String?
+  linkedControls       String?
+  reviewDate           DateTime?
+  deadline             DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// SETTINGS (Key-Value)
+// ═══════════════════════════════════════
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CONTEXT & ISMS SCOPE
+// ═══════════════════════════════════════
+model Scope {
+  id                 String    @id @default(uuid())
+  version            String    @default("1.0")
+  companyDescription String?
+  internalIssues     String?
+  externalIssues     String?
+  interestedParty    String?
+  requirements       String?
+  scopeStatement     String?
+  locations          String?
+  processes          String?
+  systems            String?
+  regulations        String?
+  exclusions         String?
+  approvedBy         String?
+  approvedAt         DateTime?
+  reviewDate         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// STATEMENT OF APPLICABILITY
+// ═══════════════════════════════════════
+model SoA {
+  id                String    @id @default(uuid())
+  controlId         String
+  controlName       String?
+  category          String?
+  applicable        String    @default("Yes")
+  justification     String?
+  exclusionReason   String?
+  status            String    @default("Not Started")
+  owner             String?
+  linkedRisks       String?
+  evidence          String?
+  implementationDate DateTime?
+  reviewDate        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// BUSINESS CONTINUITY & DR
+// ═══════════════════════════════════════
+model BCP {
+  id              String    @id @default(uuid())
+  planName        String
+  type            String    @default("DR Plan")
+  owner           String?
+  criticalServices String?
+  rto             String?
+  rpo             String?
+  dependencies    String?
+  lastTestDate    DateTime?
+  testResult      String?
+  improvements    String?
+  status          String    @default("Active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// MANAGEMENT REVIEW
+// ═══════════════════════════════════════
+model ManagementReview {
+  id            String    @id @default(uuid())
+  reviewDate    DateTime?
+  attendees     String?
+  agenda        String?
+  reviewInputs  String?
+  reviewOutputs String?
+  decisions     String?
+  actionItems   String?
+  status        String    @default("Scheduled")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// COMMUNICATION PLAN
+// ═══════════════════════════════════════
+model Communication {
+  id        String   @id @default(uuid())
+  topic     String
+  audience  String?
+  method    String   @default("Email")
+  frequency String   @default("Ad-hoc")
+  owner     String?
+  record    String?
+  status    String   @default("Ongoing")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// CONTINUAL IMPROVEMENT
+// ═══════════════════════════════════════
+model Improvement {
+  id          String    @id @default(uuid())
+  source      String    @default("Audit Finding")
+  description String?
+  owner       String?
+  priority    String    @default("Medium")
+  status      String    @default("Open")
+  benefits    String?
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// THREAT INTELLIGENCE
+// ═══════════════════════════════════════
+model Threat {
+  id             String   @id @default(uuid())
+  title          String
+  source         String?
+  description    String?
+  severity       String   @default("Medium")
+  relevance      String   @default("High")
+  linkedRisks    String?
+  linkedControls String?
+  status         String   @default("Active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// LEGAL & REGULATORY REGISTER
+// ═══════════════════════════════════════
+model LegalRequirement {
+  id            String    @id @default(uuid())
+  title         String
+  category      String    @default("Law")
+  jurisdiction  String    @default("EU")
+  applicability String    @default("Fully Applicable")
+  owner         String?
+  status        String    @default("Compliant")
+  evidence      String?
+  reviewDate    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// AUDIT TRAIL
+// ═══════════════════════════════════════
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  userEmail  String?
+  action     String   // CREATE, UPDATE, DELETE
+  module     String   // risks, controls, etc.
+  recordId   String?
+  recordName String?
+  oldValues  String?  // JSON
+  newValues  String?  // JSON
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?  // null = broadcast to all
+  title     String
+  message   String
+  type      String   @default("info") // info, warning, danger, success
+  link      String?  // URL to navigate to
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ═══════════════════════════════════════
+// COMMENTS / NOTES
+// ═══════════════════════════════════════
+model Comment {
+  id         String   @id @default(uuid())
+  module     String   // risks, controls, incidents, etc.
+  recordId   String
+  userId     String?
+  userEmail  String?
+  userName   String?
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// EVIDENCE MANAGEMENT
+// ═══════════════════════════════════════
+model Evidence {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  type          String   @default("Document")
+  referenceType String?  // risk, control, audit, etc.
+  referenceId   String?
+  tags          String?
+  fileName      String?
+  filePath      String?
+  fileSize      Int?
+  mimeType      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ═══════════════════════════════════════
+// VULNERABILITY REGISTER
+// ═══════════════════════════════════════
+model Vulnerability {
+  id             String    @id @default(uuid())
+  cveId          String?
+  title          String
+  description    String?
+  severity       String    @default("Medium")
+  cvssScore      Float?
+  source         String    @default("Vulnerability Scanner")
+  status         String    @default("Open")
+  affectedSystem String?
+  affectedAsset  String?
+  owner          String?
+  discoveryDate  DateTime?
+  dueDate        DateTime?
+  remediation    String?
+  linkedControl  String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// ═══════════════════════════════════════
+// RISK-CONTROL LINKAGE
+// ═══════════════════════════════════════
+model RiskControl {
+  id        String   @id @default(uuid())
+  riskId    String
+  controlId String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([riskId, controlId])
+}
